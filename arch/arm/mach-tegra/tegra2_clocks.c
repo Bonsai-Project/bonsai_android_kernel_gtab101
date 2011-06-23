@@ -1762,7 +1762,11 @@ static struct clk tegra_pll_x = {
 	.ops       = &tegra_pll_ops,
 	.reg       = 0xe0,
 	.parent    = &tegra_clk_m,
+#if defined(CONFIG_TEGRA_OVERCLOCK)
 	.max_rate  = 1400000000,
+#else
+	.max_rate  = 1000000000,
+#endif
 	.u.pll = {
 		.input_min = 2000000,
 		.input_max = 31000000,
@@ -1889,7 +1893,11 @@ static struct clk tegra_clk_cclk = {
 	.inputs	= mux_cclk,
 	.reg	= 0x20,
 	.ops	= &tegra_super_ops,
+#if defined(CONFIG_TEGRA_OVERCLOCK)
 	.max_rate = 1400000000,
+#else
+	.max_rate = 1000000000,
+#endif
 };
 
 static struct clk tegra_clk_sclk = {
@@ -1905,7 +1913,11 @@ static struct clk tegra_clk_virtual_cpu = {
 	.name      = "cpu",
 	.parent    = &tegra_clk_cclk,
 	.ops       = &tegra_cpu_ops,
+#if defined(CONFIG_TEGRA_OVERCLOCK)
 	.max_rate  = 1400000000,
+#else
+	.max_rate  = 1000000000,
+#endif
 	.u.cpu = {
 		.main      = &tegra_pll_x,
 		.backup    = &tegra_pll_p,
@@ -2298,9 +2310,15 @@ static struct tegra_sku_rate_limit sku_limits[] =
 	RATE_LIMIT("cclk",	750000000, 0x07, 0x10),
 	RATE_LIMIT("pll_x",	750000000, 0x07, 0x10),
 
+#if defined(CONFIG_TEGRA_OVERCLOCK)
 	RATE_LIMIT("cpu",	1400000000, 0x04, 0x08, 0x0F),
 	RATE_LIMIT("cclk",	1400000000, 0x04, 0x08, 0x0F),
 	RATE_LIMIT("pll_x",	1400000000, 0x04, 0x08, 0x0F),
+#else
+	RATE_LIMIT("cpu",	1000000000, 0x04, 0x08, 0x0F),
+	RATE_LIMIT("cclk",	1000000000, 0x04, 0x08, 0x0F),
+	RATE_LIMIT("pll_x",	1000000000, 0x04, 0x08, 0x0F),
+#endif
 
 	RATE_LIMIT("cpu",	1200000000, 0x14, 0x17, 0x18, 0x1B, 0x1C),
 	RATE_LIMIT("cclk",	1200000000, 0x14, 0x17, 0x18, 0x1B, 0x1C),
@@ -2430,6 +2448,7 @@ static struct cpufreq_frequency_table freq_table_1p2GHz[] = {
 	{ 9, CPUFREQ_TABLE_END },
 };
 
+#if defined(CONFIG_TEGRA_OVERCLOCK)
 static struct cpufreq_frequency_table freq_table_1p4GHz[] = {
         { 0, 216000 },
         { 1, 312000 },
@@ -2443,12 +2462,15 @@ static struct cpufreq_frequency_table freq_table_1p4GHz[] = {
         { 9, 1400000 },
         { 10, CPUFREQ_TABLE_END },
 };
+#endif
 
 static struct tegra_cpufreq_table_data cpufreq_tables[] = {
 	{ freq_table_750MHz, 1, 4 },
 	{ freq_table_1p0GHz, 2, 6 },
 	{ freq_table_1p2GHz, 2, 7 },
+#if defined(CONFIG_TEGRA_OVERCLOCK)
 	{ freq_table_1p4GHz, 2, 6 },
+#endif
 };
 
 struct tegra_cpufreq_table_data *tegra_cpufreq_table_get(void)
