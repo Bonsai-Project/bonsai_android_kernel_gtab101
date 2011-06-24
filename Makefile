@@ -351,7 +351,21 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -fno-strict-aliasing -fno-common \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
-		   -fno-delete-null-pointer-checks
+		   -fno-delete-null-pointer-checks \
+			-pipe \
+            -fno-tree-vectorize \
+            -mfloat-abi=softfp \
+            -mtune=cortex-a8 \
+            -mfpu=neon \
+            -mthumb \
+            -fno-gcse \
+            -fprefetch-loop-arrays \
+            --param l2-cache-size=512 \
+            --param l1-cache-size=64 \
+            --param simultaneous-prefetches=6 \
+            --param prefetch-latency=400 \
+            --param l1-cache-line-size=64
+
 #change@wtl.kSingh - enabling FIPS mode - starts
 ifeq ($(USE_SEC_FIPS_MODE),true)
 KBUILD_CFLAGS += -DSEC_FIPS_ENABLED
