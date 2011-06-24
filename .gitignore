@@ -18,6 +18,7 @@ arch/arm/boot/sph-D700-kernel.tar
 .config
 .missing-syscalls.d
 .version
+*_defconfig
 modules.order
 arch/arm/kernel/asm-offsets.s
 arch/arm/kernel/vmlinux.lds
