@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 arch/arm/boot/sph-D700-kernel.tar
 *.builtin
 *.diff
@@ -69,5 +70,4 @@ kernel/config_data.h
 lib/crc32table.h
 lib/gen_crc32table
 vmlinux
-
 

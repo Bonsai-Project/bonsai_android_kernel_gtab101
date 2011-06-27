@@ -1711,11 +1711,11 @@ config CPU_FREQ_S3C24XX_DEBUGFS
 	  Export status information via debugfs.
 
 config TEGRA_OVERCLOCK
-        bool "TEGRA_OVERCLOCK - Overclocking"
-        depends on CPU_FREQ
-        default n
-        help
-          This enables overclocking to 1.4GHZ.
+	bool "TEGRA_OVERCLOCK - Overclocking"
+	depends on CPU_FREQ
+	default n
+	help
+	  This enables overclocking to 1.4GHZ.
 
 endif
 
