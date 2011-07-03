@@ -1082,7 +1082,7 @@ static int dpm_prepare(pm_message_t state)
 			}
 			printk(KERN_INFO "PM: Device %s not prepared "
 				"for power transition: code %d\n",
-				dev_name(dev), error);
+				kobject_name(&dev->kobj), error);
 			put_device(dev);
 			break;
 		}

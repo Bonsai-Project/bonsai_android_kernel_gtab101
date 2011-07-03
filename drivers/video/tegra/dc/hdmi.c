@@ -149,8 +149,6 @@ const struct fb_videomode tegra_dc_hdmi_supported_modes[] = {
 		.vmode =	FB_VMODE_NONINTERLACED,
 		.sync = 0,
 	},
-
-#ifdef CONFIG_TEGRA_ENABLE_SUPPORT_FOR_1080p_30HZ
 	/* 1920x1080p 30Hz EIA/CEA-861-B Format 34 */
 	{
 		.xres =		1920,
@@ -165,7 +163,6 @@ const struct fb_videomode tegra_dc_hdmi_supported_modes[] = {
 		.vmode =	FB_VMODE_NONINTERLACED,
 		.sync = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
 	},
-#else
 	/* 1920x1080p 59.94/60hz EIA/CEA-861-B Format 16 */
 	{
 		.xres =		1920,
@@ -180,7 +177,6 @@ const struct fb_videomode tegra_dc_hdmi_supported_modes[] = {
 		.vmode =	FB_VMODE_NONINTERLACED,
 		.sync = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
 	},
-#endif
 };
 
 /* table of electrical settings, must be in acending order. */
@@ -1340,6 +1336,7 @@ static void tegra_dc_hdmi_disable(struct tegra_dc *dc)
 
 	tegra_periph_reset_assert(hdmi->clk);
 	clk_disable(hdmi->clk);
+	tegra_dvfs_set_rate(hdmi->clk, 0);
 }
 
 struct tegra_dc_out_ops tegra_dc_hdmi_ops = {
