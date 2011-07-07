@@ -334,8 +334,10 @@ CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 CFLAGS_MODULE   =
 AFLAGS_MODULE   =
 LDFLAGS_MODULE  =
-CFLAGS_KERNEL	= -O2 -mtune=cortex-a9 -ftree-vectorize -ffast-math -fsingle-precision-constant
-AFLAGS_KERNEL	= -O2 -mtune=cortex-a9 -ftree-vectorize -ffast-math -fsingle-precision-constant
+CFLAGS_KERNEL	=
+#CFLAGS_KERNEL	= -O2 -mtune=cortex-a9 -ftree-vectorize -ffast-math -fsingle-precision-constant
+AFLAGS_KERNEL	= 
+#AFLAGS_KERNEL	= -O2 -mtune=cortex-a9 -ftree-vectorize -ffast-math -fsingle-precision-constant
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
 
@@ -353,18 +355,19 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
 			-pipe \
-            -fno-tree-vectorize \
+            -ftree-vectorize \
+            -mtune=cortex-a9 \
+            -mfpu=vfpv3 \
             -mfloat-abi=softfp \
-            -mtune=cortex-a8 \
-            -mfpu=neon \
-            -mthumb \
-            -fno-gcse \
+            -fno-tree-vectorize \
             -fprefetch-loop-arrays \
-            --param l2-cache-size=512 \
-            --param l1-cache-size=64 \
-            --param simultaneous-prefetches=6 \
-            --param prefetch-latency=400 \
-            --param l1-cache-line-size=64
+            -mthumb \
+            --param l2-cache-size=1024
+#            -fno-gcse \
+#            --param l1-cache-size=32 \
+#            --param simultaneous-prefetches=6 \
+#            --param prefetch-latency=400 \
+#            --param l1-cache-line-size=64
 
 #change@wtl.kSingh - enabling FIPS mode - starts
 ifeq ($(USE_SEC_FIPS_MODE),true)
