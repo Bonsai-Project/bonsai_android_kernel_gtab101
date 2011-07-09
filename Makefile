@@ -334,10 +334,8 @@ CHECKFLAGS     := -D__linux__ -Dlinux -D__STDC__ -Dunix -D__unix__ \
 CFLAGS_MODULE   =
 AFLAGS_MODULE   =
 LDFLAGS_MODULE  =
-CFLAGS_KERNEL	=
-#CFLAGS_KERNEL	= -O2 -mtune=cortex-a9 -ftree-vectorize -ffast-math -fsingle-precision-constant
-AFLAGS_KERNEL	= 
-#AFLAGS_KERNEL	= -O2 -mtune=cortex-a9 -ftree-vectorize -ffast-math -fsingle-precision-constant
+#CFLAGS_KERNEL	= -mtune=cortex-a9 -ftree-vectorize -ffast-math -fsingle-precision-constant
+#AFLAGS_KERNEL	= -mtune=cortex-a9 -ftree-vectorize -ffast-math -fsingle-precision-constant
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage
 
 
@@ -355,14 +353,18 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks \
 			-pipe \
-            -ftree-vectorize \
-            -mtune=cortex-a9 \
-            -mfpu=vfpv3 \
-            -mfloat-abi=softfp \
-            -fno-tree-vectorize \
-            -fprefetch-loop-arrays \
+			-fno-tree-vectorize \
+			-fgcse-sm \
+			-marm \
+			-mtune=cortex-a9 \
+			-mfpu=vfpv3-d16 \
+            -mfloat-abi=hard \
+			-funroll-loops \
+			-falign-loops=8 \
             -mthumb \
             --param l2-cache-size=1024
+
+#            -fprefetch-loop-arrays \
 #            -fno-gcse \
 #            --param l1-cache-size=32 \
 #            --param simultaneous-prefetches=6 \
