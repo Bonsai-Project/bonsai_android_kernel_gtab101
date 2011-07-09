@@ -356,12 +356,13 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 			-fno-tree-vectorize \
 			-fgcse-sm \
 			-marm \
+			-mcpu=cortex-a9 \
 			-mtune=cortex-a9 \
 			-mfpu=vfpv3-d16 \
             -mfloat-abi=hard \
 			-funroll-loops \
 			-falign-loops=8 \
-            -mthumb \
+			-mstructure-size-boundary=32 \
             --param l2-cache-size=1024
 
 #            -fprefetch-loop-arrays \
