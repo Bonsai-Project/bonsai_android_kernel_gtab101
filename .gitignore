@@ -14,7 +14,7 @@ arch/arm/boot/sph-D700-kernel.tar
 *.ko
 *.mod.c
 *.o.d
-*.o.tmp
+*.tmp
 .config
 .missing-syscalls.d
 .version
