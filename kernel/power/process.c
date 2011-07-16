@@ -85,8 +85,8 @@ static int try_to_freeze_tasks(bool sig_only)
 			break;
 
 		if (!pm_check_wakeup_events()) {
-		  wakeup = true;
-		  break;
+			wakeup = true;
+			break;
 		}
 
 		/*
@@ -115,10 +115,9 @@ static int try_to_freeze_tasks(bool sig_only)
 		else {
 			printk("\n");
 			printk(KERN_ERR "Freezing of tasks %s after %d.%02d seconds "
-			       "(%d tasks refusing to freeze, wq_busy=%d):\n",
-				wakeup ? "aborted" : "failed",
-			       elapsed_csecs / 100, elapsed_csecs % 100,
-			       todo - wq_busy, wq_busy);
+					"(%d tasks refusing to freeze):\n",
+					wakeup ? "aborted" : "failed",
+					elapsed_csecs / 100, elapsed_csecs % 100, todo);
 		}
 		thaw_workqueues();
 
