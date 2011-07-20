@@ -265,7 +265,6 @@ static ssize_t show_##file_name						\
 show_one(sampling_rate, sampling_rate);
 show_one(io_is_busy, io_is_busy);
 show_one(up_threshold, up_threshold);
-show_one(down_differential, down_differential);
 show_one(sampling_down_factor, sampling_down_factor);
 show_one(ignore_nice_load, ignore_nice);
 show_one(powersave_bias, powersave_bias);
@@ -348,6 +347,7 @@ static ssize_t store_up_threshold(struct kobject *a, struct attribute *b,
 	return count;
 }
 
+<<<<<<< HEAD
 static ssize_t store_down_differential(struct kobject *a, struct attribute *b,
                 const char *buf, size_t count)
 {
@@ -390,6 +390,29 @@ static ssize_t store_sampling_down_factor(struct kobject *a,
         mutex_unlock(&dbs_mutex);
 
         return count;
+=======
+static ssize_t store_sampling_down_factor(struct kobject *a,
+			struct attribute *b, const char *buf, size_t count)
+{
+	unsigned int input, j;
+	int ret;
+	ret = sscanf(buf, "%u", &input);
+
+	if (ret != 1 || input > MAX_SAMPLING_DOWN_FACTOR || input < 1)
+		return -EINVAL;
+	mutex_lock(&dbs_mutex);
+	dbs_tuners_ins.sampling_down_factor = input;
+
+	/* Reset down sampling multiplier in case it was active */
+	for_each_online_cpu(j) {
+		struct cpu_dbs_info_s *dbs_info;
+		dbs_info = &per_cpu(od_cpu_dbs_info, j);
+		dbs_info->rate_mult = 1;
+	}
+	mutex_unlock(&dbs_mutex);
+
+	return count;
+>>>>>>> upstream/master
 }
 
 static ssize_t store_ignore_nice_load(struct kobject *a, struct attribute *b,
@@ -463,7 +486,10 @@ static struct attribute *dbs_attributes[] = {
 	&sampling_rate_min.attr,
 	&sampling_rate.attr,
 	&up_threshold.attr,
+<<<<<<< HEAD
 	&down_differential.attr,
+=======
+>>>>>>> upstream/master
 	&sampling_down_factor.attr,
 	&ignore_nice_load.attr,
 	&powersave_bias.attr,
@@ -620,8 +646,13 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 	if (max_load_freq > dbs_tuners_ins.up_threshold * policy->cur) {
 		/* If switching to max speed, apply sampling_down_factor */
 		if (policy->cur < policy->max)
+<<<<<<< HEAD
 		  this_dbs_info->rate_mult =
 		    dbs_tuners_ins.sampling_down_factor;
+=======
+			this_dbs_info->rate_mult =
+				dbs_tuners_ins.sampling_down_factor;
+>>>>>>> upstream/master
 		dbs_freq_increase(policy, policy->max);
 		return;
 	}
@@ -644,8 +675,13 @@ static void dbs_check_cpu(struct cpu_dbs_info_s *this_dbs_info)
 				(dbs_tuners_ins.up_threshold -
 				 dbs_tuners_ins.down_differential);
 
+<<<<<<< HEAD
 			/* No longer fully busy, reset rate_mult */
 			this_dbs_info->rate_mult = 1;
+=======
+		/* No longer fully busy, reset rate_mult */
+		this_dbs_info->rate_mult = 1;
+>>>>>>> upstream/master
 
 		if (freq_next < policy->min)
 			freq_next = policy->min;
@@ -671,7 +707,11 @@ static void do_dbs_timer(struct work_struct *work)
 
 	/* We want all CPUs to do sampling nearly on same jiffy */
 	int delay = usecs_to_jiffies(dbs_tuners_ins.sampling_rate
+<<<<<<< HEAD
 	  * dbs_info->rate_mult);
+=======
+		* dbs_info->rate_mult);
+>>>>>>> upstream/master
 
 	if (num_online_cpus() > 1)
 		delay -= jiffies % delay;
