@@ -3,7 +3,7 @@
  *
  * CPU state save & restore routines for CPU hotplug
  *
- * Copyright (c) 2010, NVIDIA Corporation.
+ * Copyright (c) 2010-2011, NVIDIA Corporation.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -128,12 +128,11 @@
 
 /*
  * perfmon unit context :
- *     2 32-bit control registers
- *     1 32-bit cycle counter
- *     for each counter 1 32-bit event select register and 1 32-bit value
- */
-
-#define CTX_PERFMON    700
+ *	2 32-bit control registers
+ *	1 32-bit cycle counter
+ *	for each counter 1 32-bit event select register and 1 32-bit value
+*/
+#define CTX_PERFMON	700
 
 #include "power.h"
 #include "power-macros.S"
@@ -377,23 +376,23 @@ ENTRY(__cortex_a9_save)
 	stmia	r9!, {r2-r3}     	@ WPT_0
 
 	/* save CP15 perfmon context */
-	add     r9, r8, #CTX_PERFMON
-	mrc     p15, 0, r2, c9, c12, 0  @ PMCR
-	bic     r0, r2, #1              @ disable counters
-	mcr     p15, 0, r0, c9, c12, 0
-	mrc     p15, 0, r3, c9, c12, 1  @ PMCNTENSET
-	mrc     p15, 0, r4, c9, c13, 0  @ PMCCNTR
-	stmia   r9!, {r2-r4}
-	mov     r0, r0, LSR #11
-	and     r0, r0, #0x3f
-	sub     r0, r0, #1
+	add	r9, r8, #CTX_PERFMON
+	mrc	p15, 0, r2, c9, c12, 0	@ PMCR
+	bic	r0, r2, #1		@ disable counters
+	mcr	p15, 0, r0, c9, c12, 0
+	mrc	p15, 0, r3, c9, c12, 1	@ PMCNTENSET
+	mrc	p15, 0, r4, c9, c13, 0	@ PMCCNTR
+	stmia	r9!, {r2-r4}
+	mov	r0, r0, LSR #11
+	and	r0, r0, #0x3f
+	sub	r0, r0, #1
 1:
-	mcr     p15, 0, r0, c9, c12, 5  @ PMSELR
-	mrc     p15, 0, r4, c9, c13, 1  @ PMXEVTYPER
-	mrc     p15, 0, r5, c9, c13, 2  @ PMXEVCNTR
-	stmia   r9!, {r4-r5}
-	subs    r0, r0, #1
-	bpl     1b
+	mcr	p15, 0, r0, c9, c12, 5	@ PMSELR
+	mrc	p15, 0, r4, c9, c13, 1	@ PMXEVTYPER
+	mrc	p15, 0, r5, c9, c13, 2	@ PMXEVCNTR
+	stmia	r9!, {r4-r5}
+	subs	r0, r0, #1
+	bpl	1b
 
 
 #ifdef CONFIG_CACHE_L2X0
@@ -412,6 +411,8 @@ ENTRY(__cortex_a9_save)
 
 __cortex_a9_save_flush_cache:
 	translate r10, r8, r1
+	dcache_flush			@ flush L1 cache.
+	disable_coherency		@ exit from coherency.
 	cpu_id	r0
 	cmp	r0, #0
 	bne	__put_cpu_in_reset
@@ -464,9 +465,18 @@ ENTRY(__cortex_a9_restore)
 
 	mcr	p15, 2, r0, c0, c0, 0	@ csselr
 	mcr	p15, 0, r1, c1, c0, 0	@ sctlr
+	tst	r2, #(0x1 << 6)
+	orrne	r2, r2, #(1 << 0)	@ sync FW bit with SMP state
 	mcr	p15, 0, r2, c1, c0, 1	@ actlr
+#ifndef CONFIG_ARCH_TEGRA_2x_SOC
+	mrc	p15, 0, r0, c0, c0, 5	@ MPIDR
+	tst	r0, #(0xF<<8)		@ cluster mask
+	bic	r3, r3, #(7<<8)		@ clear MAXCLKLATENCY field
+	orreq	r3, r3, #(3<<8)		@ set MAXCLKLATENCY to 3 on G
+	orrne	r3, r3, #(2<<8)		@ set MAXCLKLATENCY to 2 on LP
+#endif
 #ifndef CONFIG_TRUSTED_FOUNDATIONS
-	//TL : moved to secure 
+	//TL : moved to secure
 	mcr	p15, 0, r3, c15, c0, 0	@ pctlr
 #endif
 
@@ -504,9 +514,9 @@ ENTRY(__cortex_a9_restore)
 	isb
 
 	mov	r4, #0
-	mcr     p15, 0, r4, c8, c3, 0   @ invalidate entire unified TLB Inner shareable.
-	mcr     p15, 0, r4, c7, c5, 6   @ invalidate entire branch predictor array.
-	mcr     p15, 0, r4, c7, c5, 0   @ invalidate all instruction caches to PoU.
+	mcr	p15, 0, r4, c8, c3, 0	@ invalidate entire unified TLB Inner shareable.
+	mcr	p15, 0, r4, c7, c5, 6	@ invalidate entire branch predictor array.
+	mcr	p15, 0, r4, c7, c5, 0	@ invalidate all instruction caches to PoU.
 	dsb
 	isb
 
@@ -558,23 +568,23 @@ ENTRY(__cortex_a9_restore)
 	mcr	p14, 0, r0, c0, c2, 2	@ DSCR
 	isb
 
-/* restore CP15 perfmon context */
-	add     r9, r8, #CTX_PERFMON
-	ldmia   r9!, {r2-r4}
-	mcr     p15, 0, r4, c9, c13, 0  @ PMCCNTR
-	mov     r0, r2, LSR #11
-	and     r0, r0, #0x3f
-	sub     r0, r0, #1
+	/* restore CP15 perfmon context */
+	add	r9, r8, #CTX_PERFMON
+	ldmia	r9!, {r2-r4}
+	mcr	p15, 0, r4, c9, c13, 0	@ PMCCNTR
+	mov	r0, r2, LSR #11
+	and	r0, r0, #0x3f
+	sub	r0, r0, #1
 1:
-	ldmia   r9!, {r4-r5}
-	mcr     p15, 0, r0, c9, c12, 5  @ PMSELR
-	mcr     p15, 0, r4, c9, c13, 1  @ PMXEVTYPER
-	mcr     p15, 0, r5, c9, c13, 2  @ PMXEVCNTR
-	subs    r0, r0, #1
-	bpl     1b
+	ldmia	r9!, {r4-r5}
+	mcr	p15, 0, r0, c9, c12, 5	@ PMSELR
+	mcr	p15, 0, r4, c9, c13, 1	@ PMXEVTYPER
+	mcr	p15, 0, r5, c9, c13, 2	@ PMXEVCNTR
+	subs	r0, r0, #1
+	bpl	1b
 
-	mcr     p15, 0, r3, c9, c12, 1  @ PMCNTENSET
-	mcr     p15, 0, r2, c9, c12, 0  @ PMCR
+	mcr	p15, 0, r3, c9, c12, 1	@ PMCNTENSET
+	mcr	p15, 0, r2, c9, c12, 0	@ PMCR
 
 #ifdef CONFIG_VFPv3
 	orr	r4, lr, #0xF00000
@@ -591,7 +601,7 @@ ENTRY(__cortex_a9_restore)
 	mcr	p15, 0, lr, c1, c0, 2	@ cpacr (loaded before VFP)
 
 #ifndef CONFIG_TRUSTED_FOUNDATIONS
-	//TL : moved to secure 
+	//TL : moved to secure
 	ldr	r9, [r8, #CTX_DIAGNOSTIC]
 	mcr	p15, 0, r9, c15, c0, 1	@ diag
 #endif
@@ -646,8 +656,8 @@ ENTRY(__cortex_a9_l2x0_restart)
 	mov32	r9, (TEGRA_ARM_PL310_BASE-IO_CPU_PHYS+IO_CPU_VIRT)
 	add	r10, r8, #CTX_L2_CTRL
 	ldmia	r10, {r3-r7}
-#ifdef  CONFIG_ARCH_TEGRA_3x_SOC
-#ifndef CONFIG_TEGRA_FPGA_PLATFORM
+#ifndef  CONFIG_ARCH_TEGRA_2x_SOC
+#ifdef CONFIG_TEGRA_SILICON_PLATFORM
 	mov32	r5, (TEGRA_FLOW_CTRL_BASE-IO_PPSB_PHYS+IO_PPSB_VIRT)
 	ldr	r5, [r5, #0x2C]		@ FLOW_CTRL_CLUSTER_CONTROL
 	ands	r5, r5, #1		@ 0 == G cluster, 1 == LP cluster
@@ -685,7 +695,7 @@ __reenable_l2x0:
 #else
 	cmp r3, #0        @ only call SMC if L2 was enable
 	beq l2_done
-	
+
 	cmp	r0, #0      @ if invalidate, call SMC with R1=1, else R1=4
 	moveq r1, #4
 	movne r1, #1
