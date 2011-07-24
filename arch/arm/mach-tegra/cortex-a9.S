@@ -311,7 +311,7 @@ ENTRY(__cortex_a9_save)
 	add	r9, r8, #CTX_IRQ_SPSR
 	stmia	r9, {r12,sp,lr}
 
-	cps	0x1b			@ Undefined mode
+	cps	0x1b			@ UNDEF mode
 	mrs	r12, spsr
 	add	r9, r8, #CTX_UND_SPSR
 	stmia	r9, {r12,sp,lr}
@@ -322,7 +322,7 @@ ENTRY(__cortex_a9_save)
 	mrs	r7, spsr
 	stmia	r1, {r7-r12,sp,lr}
 
-	cps	0x13			@ back to SVC
+	cps	0x13			@ back to SVC mode
 	mov	r8, r0
 
 	/* Save CP14 debug controller context */
@@ -383,11 +383,7 @@ ENTRY(__cortex_a9_save)
 
 __cortex_a9_save_flush_cache:
 	translate r10, r8, r1
-
-	dcache_flush                    @ flush L1 cache.
-	disable_coherency               @ exit from coherency.
 	cpu_id	r0
-
 	cmp	r0, #0
 	bne	__put_cpu_in_reset
 	mov	r8, r10
@@ -553,6 +549,12 @@ ENTRY(__cortex_a9_restore)
 	mcr	p15, 0, r9, c15, c0, 1	@ diag
 #endif
 
+#if SANITY_CHECK_ARM_ERRATA_FIXES
+	mrc	p15, 0, r3, c0, c0, 0	@ read main ID register
+	and	r4, r3, #0x00f00000	@ variant
+	and	r5, r3, #0x0000000f	@ revision
+	orr	r5, r5, r4, lsr #20-4	@ combine variant and revision
+	mrc	p15, 0, r9, c15, c0, 1	@ read diagnostic register
 #ifdef CONFIG_ARM_ERRATA_743622
 	teq	r5, #0x20		@ present in r2p0
 	teqne	r5, #0x21		@ present in r2p1
@@ -597,6 +599,17 @@ ENTRY(__cortex_a9_l2x0_restart)
 	mov32	r9, (TEGRA_ARM_PL310_BASE-IO_CPU_PHYS+IO_CPU_VIRT)
 	add	r10, r8, #CTX_L2_CTRL
 	ldmia	r10, {r3-r7}
+#ifdef  CONFIG_ARCH_TEGRA_3x_SOC
+#ifndef CONFIG_TEGRA_FPGA_PLATFORM
+	mov32	r5, (TEGRA_FLOW_CTRL_BASE-IO_PPSB_PHYS+IO_PPSB_VIRT)
+	ldr	r5, [r5, #0x2C]		@ FLOW_CTRL_CLUSTER_CONTROL
+	ands	r5, r5, #1		@ 0 == G cluster, 1 == LP cluster
+	movweq	r5, #0x331		@ G tag
+	movweq	r6, #0x441		@ G data
+	movwne	r5, #0x221		@ LP tag
+	movwne	r6, #0x221		@ LP data
+#endif
+#endif
 #ifndef CONFIG_TRUSTED_FOUNDATIONS
 	str	r5, [r9, #L2X0_TAG_LATENCY_CTRL]
 	str	r6, [r9, #L2X0_DATA_LATENCY_CTRL]
@@ -605,7 +618,6 @@ ENTRY(__cortex_a9_l2x0_restart)
 	mov     r4, #0x2                @ L2X0_DYNAMIC_CLK_GATING_EN
 	str     r4, [r9, #L2X0_PWR_CTRL]
 	cmp	r0, #0
-
 	beq	__reenable_l2x0
 
 	mov	r0, #0xff
@@ -648,8 +660,9 @@ ENTRY(__shut_off_mmu)
 	movw	r2, #(1<<12) | (1<<11) | (1<<2) | (1<<0)
 	bic	r3, r3, r2
 	dsb
-	mcr	p15, 0, r3, c1, c0, 0
 	isb
+	/* The following two instructions must be in the same cache line. */
+	mcr	p15, 0, r3, c1, c0, 0
 	bx	r9
 ENDPROC(__shut_off_mmu)
 
@@ -749,11 +762,7 @@ ENTRY(__return_to_virtual)
 	mcr	p15, 0, r0, c3, c0, 0	@ domain access register
 
 	mov32	r0, 0xff0a89a8
-#ifdef CONFIG_SMP
-	mov32	r1, 0xc0e0c4e0
-#else
-	mov32	r1, 0x40e044e0
-#endif
+	mov32	r1, 0xc0e044e0
 	mcr	p15, 0, r0, c10, c2, 0	@ PRRR
 	mcr	p15, 0, r1, c10, c2, 1	@ NMRR
 	mrc	p15, 0, r0, c1, c0, 0

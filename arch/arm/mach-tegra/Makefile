@@ -1,5 +1,6 @@
 obj-y                                   += common.o
 obj-y                                   += apbio.o
+obj-$(CONFIG_ARCH_TEGRA_2x_SOC)         += common-t2.o
 obj-y                                   += io.o
 obj-y                                   += irq.o legacy_irq.o
 obj-y                                   += syncpt.o
@@ -43,7 +44,10 @@ obj-y                                   += headsmp.o
 obj-$(CONFIG_ARCH_TEGRA_2x_SOC)         += headsmp-t2.o
 obj-$(CONFIG_TEGRA_SYSTEM_DMA)          += dma.o
 obj-$(CONFIG_CPU_FREQ)                  += cpu-tegra.o
-obj-$(CONFIG_CPU_IDLE)                  += cpuidle.o
+ifeq ($(CONFIG_CPU_IDLE),y)
+obj-y									+= cpuidle.o
+obj-$(CONFIG_ARCH_TEGRA_2x_SOC)         += cpuidle-t2.o
+endif
 obj-$(CONFIG_TEGRA_IOVMM)               += iovmm.o
 obj-$(CONFIG_TEGRA_IOVMM_GART)          += iovmm-gart.o
 obj-$(CONFIG_TEGRA_MC_PROFILE)          += tegra2_mc.o
