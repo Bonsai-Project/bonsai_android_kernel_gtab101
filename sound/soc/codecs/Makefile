@@ -142,5 +142,5 @@ obj-$(CONFIG_SND_SOC_WM2000)	+= snd-soc-wm2000.o
 obj-$(CONFIG_SND_SOC_WM9090)	+= snd-soc-wm9090.o
 
 ifeq ($(CONFIG_SND_VOODOO_MODULE),m)
-obj-$(CONFIG_SND_VOODOO_MODULE)  += voodoo-sound-tegrak-module/
+obj-$(CONFIG_SND_VOODOO_MODULE)	+= voodoo-sound-tegrak-module/
 endif
